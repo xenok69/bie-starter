@@ -7,6 +7,7 @@
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
         <PackageReference Include="xunit.v3" Version="4.0.2" />
         <PackageReference Include="xunit.runner.visualstudio" Version="4.0.1" />
+        <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="2.5.2" />
         <ProjectReference Include="../../src/BIE.Core/BIE.Core.csproj" />
     </ItemGroup>
 </Project>

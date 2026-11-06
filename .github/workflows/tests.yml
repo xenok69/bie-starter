@@ -20,7 +20,7 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      - run: dotnet test tests/BIE.UnitTests -c Release --logger trx --results-directory TestResults/unit
+      - run: dotnet test tests/BIE.UnitTests -c Release --report-trx --results-directory TestResults/unit
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -37,7 +37,7 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      - run: dotnet test tests/BIE.IntegrationTests -c Release --logger trx --results-directory TestResults/integration
+      - run: dotnet test tests/BIE.IntegrationTests -c Release --report-trx --results-directory TestResults/integration
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -56,7 +56,7 @@ jobs:
           dotnet-version: '10.0.x'
       - name: Browser prüfen
         run: google-chrome --version
-      - run: dotnet test tests/BIE.E2ETests -c Release --logger trx --results-directory TestResults/e2e
+      - run: dotnet test tests/BIE.E2ETests -c Release --report-trx --results-directory TestResults/e2e
       - uses: actions/upload-artifact@v4
         if: always()
         with:

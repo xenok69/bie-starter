@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
@@ -10,7 +10,7 @@ using OpenQA.Selenium.Support.UI;
 namespace BIE.E2ETests;
 
 // Jeder Test erhält einen eigenen App-Prozess, Port, Browser und Datenbestand.
-public abstract class BrowserTestBase
+public abstract class BrowserTestBase : IAsyncLifetime
 {
     protected IWebDriver Driver { get; private set; } = null!;
     protected WebDriverWait Wait { get; private set; } = null!;
@@ -18,10 +18,8 @@ public abstract class BrowserTestBase
     private Process? app;
     private string tempFolder = "";
     private readonly List<string> appLog = [];
-    public TestContext TestContext { get; set; } = null!;
 
-    [TestInitialize]
-    public async Task Start()
+    public async ValueTask InitializeAsync()
     {
         try
         {
@@ -119,21 +117,25 @@ public abstract class BrowserTestBase
         }
     }
 
-    [TestCleanup]
-    public void Cleanup()
+    public ValueTask DisposeAsync()
     {
-        if (TestContext.CurrentTestOutcome != UnitTestOutcome.Passed)
+        Cleanup();
+        return ValueTask.CompletedTask;
+    }
+
+    private void Cleanup()
+    {
+        if (TestContext.Current.TestState?.Result != TestResult.Passed)
         {
-            var resultDir = TestContext.ResultsDirectory ?? Path.Combine(Path.GetTempPath(), "bie-results");
+            var resultDir = Path.Combine(Path.GetTempPath(), "bie-results");
             Directory.CreateDirectory(resultDir);
-            var stem = (TestContext.TestName ?? "test") + "-" + Guid.NewGuid().ToString("N");
+            var stem = (TestContext.Current.Test?.TestDisplayName ?? "test") + "-" + Guid.NewGuid().ToString("N");
             try
             {
                 if (Driver is ITakesScreenshot screenshot)
                 {
                     var file = Path.Combine(resultDir, stem + ".png");
                     screenshot.GetScreenshot().SaveAsFile(file);
-                    TestContext.AddResultFile(file);
                 }
             }
             catch (WebDriverException)
@@ -143,7 +145,6 @@ public abstract class BrowserTestBase
             var logFile = Path.Combine(resultDir, stem + ".log");
             lock (appLog)
                 File.WriteAllLines(logFile, appLog);
-            TestContext.AddResultFile(logFile);
         }
 
         try
